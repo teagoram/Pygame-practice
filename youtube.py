@@ -6,6 +6,8 @@ pygame.init()
 # width, height
 screen = pygame.display.set_mode((800, 600))
 
+background = pygame.image.load('background.jpg')
+
 # title and icon
 pygame.display.set_caption("Space Invaders")
 icon = pygame.image.load('ufo.png')
@@ -20,9 +22,20 @@ playerX_Change = 0
 
 enemyIMG = pygame.image.load('ufo.png')
 enemyImg = pygame.transform.scale(enemyIMG, (50, 50))
-enemyX = random.randint(0, 800)
+enemyX = random.randint(0, 747)
 enemyY = random.randint(50, 150)
-enemyX_Change = 0
+enemyX_Change = 0.3
+enemyY_Change = 30
+
+# ready - cant see bullet
+# fire - bullet is moving
+bullet = pygame.image.load('bullet.png')
+yesBullet = pygame.transform.scale(bullet, (20, 20))
+bulletX = 0
+bulletY = 480
+bulletX_Change = 0
+bulletY_Change = 0.5
+bullet_state = "ready"
 
 
 def player(x, y):
@@ -33,11 +46,18 @@ def enemy(x, y):
     screen.blit(enemyImg, (x, y))
 
 
+def fire_bullet(x, y):
+    global bullet_state
+    bullet_state = "fire"
+    screen.blit(yesBullet, (x + 15, y + 10))
+
+
 # game loops
 run = True
 while run:
     screen.fill((215, 150, 0))
-
+    # background image
+    screen.blit(background, (0, 0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -46,6 +66,9 @@ while run:
                 playerX_Change = -0.3
             if event.key == pygame.K_RIGHT:
                 playerX_Change = 0.3
+            if event.key == pygame.K_SPACE:
+                fire_bullet(playerX, bulletY)
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 playerX_Change = 0
@@ -55,6 +78,19 @@ while run:
         playerX = 0
     elif playerX >= 747:
         playerX = 747
+
+    enemyX += enemyX_Change
+    if enemyX <= 0:
+        enemyX_Change = 0.2
+        enemyY += enemyY_Change
+    elif enemyX >= 747:
+        enemyX_Change = -0.2
+        enemyY += enemyY_Change
+
+    # bullet movement
+    if bullet_state == "fire":
+        fire_bullet(playerX, bulletY)
+        bulletY -= bulletY_Change
 
     enemy(enemyX, enemyY)
     player(playerX, playerY)
